@@ -23,5 +23,7 @@ for line in Input:
         yesList = []
         for answer in person:
             yesList.append(list(set(answer)))
-        print(yesList)
         result2 = result2 + len(list(set(yesList[0]).intersection(*yesList)))
+        
+print(result1)
+print(result2)
