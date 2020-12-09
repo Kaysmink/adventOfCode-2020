@@ -38,7 +38,6 @@ while True:
 
 print(len(possible))
 
-
 # deel 2 
 # opnieuw inlezen aangezien ik delen heb overgeslagen welke niet nodig waren in 1 
 bagDictionary = defaultdict(lambda: defaultdict(int)) 
@@ -68,40 +67,7 @@ def countBags(colour):
         
     return Total
 
-
 print(countBags(searching) - 1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 
     
