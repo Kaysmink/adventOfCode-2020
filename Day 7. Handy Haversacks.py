@@ -52,7 +52,6 @@ for line in Input:
         bagDictionary[headBag] = contentDict
 
 emptyBags = [bags for bags in allColours if "other" in bagDictionary[bags].keys()]
-numOfBagsDict = defaultdict(int)
 
 def countBags(colour):
     Total = 1
