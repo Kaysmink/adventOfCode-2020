@@ -65,34 +65,12 @@ def newUnits(old, new):
     
     waypointUnitsCopy = copy.deepcopy(waypointUnits)
     for i in range(0,2):
-        if(old[i] == "N"):
-            if new[i] == "E":
+        if(old[i] in ["N", "S"]):
+            if new[i] in ["E", "W"]:
                waypointUnits["EW"] = abs(waypointUnitsCopy["NS"])
-            if new[i] == "W":
-               waypointUnits["EW"] = abs(waypointUnitsCopy["NS"]) 
-            if new[i] == "S":
-               waypointUnits["NS"] = abs(waypointUnitsCopy["NS"])  
-        if(old[i] == "E"):
-            if new[i] == "N":
+        if(old[i] in ["E", "W"]):
+            if new[i] in ["N", "S"]:
                waypointUnits["NS"] = abs(waypointUnitsCopy["EW"])  
-            if new[i] == "W":
-               waypointUnits["EW"] = abs(waypointUnitsCopy["EW"]) 
-            if new[i] == "S":
-               waypointUnits["NS"] = abs(waypointUnitsCopy["EW"]) 
-        if(old[i] == "W"):
-            if new[i] == "E":
-               waypointUnits["EW"] = abs(waypointUnitsCopy["EW"]) 
-            if new[i] == "N":
-               waypointUnits["NS"] = abs(waypointUnitsCopy["EW"]) 
-            if new[i] == "S":
-               waypointUnits["NS"] = abs(waypointUnitsCopy["EW"]) 
-        if(old[i] == "S"):
-            if new[i] == "E":
-               waypointUnits["EW"] = abs(waypointUnitsCopy["NS"]) 
-            if new[i] == "N":
-               waypointUnits["NS"] = abs(waypointUnitsCopy["NS"]) 
-            if new[i] == "W":
-               waypointUnits["EW"] = abs(waypointUnitsCopy["NS"]) 
                
 def executeInstruction2(instruction, value):
     global waypointUnits
@@ -129,30 +107,27 @@ def executeInstruction2(instruction, value):
                 waypointDirection = waypointDirection.replace("E", "W")
             waypointUnits["EW"] = abs(waypointUnits["EW"] - value)
         
-    if instruction == "L":
-        olDirections = waypointDirection
+    if instruction in ["R", "L"]:
+        oldDirections = waypointDirection
         waypointDirection = newDirectionDict[instruction][waypointDirection][str(value)] 
-        newUnits(olDirections, waypointDirection)
-    if instruction == "R":
-        olDirections = waypointDirection
-        waypointDirection = newDirectionDict[instruction][waypointDirection][str(value)]   
-        newUnits(olDirections, waypointDirection)     
+        newUnits(oldDirections, waypointDirection)   
         
     if instruction == "F":
-        directions = list(waypointDirection)
-        if "N" in directions: 
+        if "N" in waypointDirection: 
             location["NS"] = location["NS"] + (abs(waypointUnits["NS"]) * value) 
-        if "S" in directions: 
+        if "S" in waypointDirection: 
             location["NS"] = location["NS"] - (abs(waypointUnits["NS"]) * value)
-        if "E" in directions: 
+        if "E" in waypointDirection: 
             location["EW"] = location["EW"] + (abs(waypointUnits["EW"]) * value)
-        if "W" in directions: 
+        if "W" in waypointDirection: 
             location["EW"] = location["EW"] - (abs(waypointUnits["EW"]) * value)
 
+# set parameters deel 1
 DirectionOfShip = 90
 eastWest = 0 
 northSouth = 0 
 
+# set parameters deel 2 
 location = {"NS": 0, "EW": 0}
 waypointUnits = {"NS": 1, "EW": 10}
 waypointDirection = "NE"
