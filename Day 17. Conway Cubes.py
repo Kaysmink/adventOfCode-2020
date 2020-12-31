@@ -1,102 +1,103 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Dec 18 15:29:42 2020
+Created on Wed Dec 30 14:37:20 2020
 
 @author: kaysm
 """
-
 from collections import defaultdict
 import itertools as it
+import copy
 
-# inlezen en klaarmaken data
 Input=open("Day 17. input.txt", "r").read().split("\n")[:-1]
 
-dimensions = defaultdict(list)
-dimensions[0] = Input.copy()
+activeDict = defaultdict()
 
-def extendMatrix(oldDimensions):
-    newDimensions = defaultdict(list)
-    for key, value in oldDimensions.items():
-        matrix = []
-        for row in value:
-            row = "." + row + "."
-            matrix.append(row)
-        matrix = ["."*len(matrix[0])] + matrix
-        matrix.append("."*len(matrix[0]))
-        newDimensions[key] = matrix
-    return newDimensions
-    
-def calculateNewStateOfIndex(z,y,x,state):
-    neighbors = []
-    for combination in it.product([z-1,z,z+1], [y-1,y,y+1], [x-1,x,x+1]):
-        neighbors.append(list(combination))
-    neighbors = [[z,y,x] for z,y,x in neighbors if z in dimensions.keys() and y >= 0 and x >= 0 and x < maxX and y < maxY]
-    neighbors.remove([z,y,x])
-    #print(z,y,x, neighbors)
-    counterActiveNeighbor = 0
-    for z,y,x in neighbors:
-        if dimensions[z][y][x] == "#":
-            counterActiveNeighbor = counterActiveNeighbor + 1
-    
-    if state == "active":
-        if counterActiveNeighbor in [2,3]:
-            return "#"
-        else:
-            return "."
-    if state == "inactive":
-        if counterActiveNeighbor == 3:
-            return "#"
-        else: 
-            return "."
-    
-def addNewDimension(iteration):
-    newDimensions = [-iteration, iteration]
-    
-    for dimension in newDimensions:
-        newMatrix = ["."*maxX] * maxY
-        dimensions[dimension] = newMatrix
+for y in range(0,len(Input)):
+    for x in range(0,len(Input[y])):
+        if Input[y][x] == "#":
+            index = ",".join(["0", "0", str(y),str(x)])
+            activeDict[index] = True
 
-def calculateNewState(dimensions):
-    newDimensions = defaultdict()
+def runCycle3D(cycle, activeDict):
+    newActiveDict = copy.deepcopy(activeDict)
+    maxX = startX + cycle
+    maxY = startY + cycle
+    maxZ = cycle
     
-    for z in dimensions.keys():
-        newMatrix = []
-        for y in range(0,maxY):
-            newRow = ""
-            for x in range(0, maxX):
-                if dimensions[z][y][x] == ".":
-                    newRow = newRow + calculateNewStateOfIndex(z,y,x, "inactive")
-                if dimensions[z][y][x] == "#":
-                    newRow = newRow + calculateNewStateOfIndex(z,y,x, "active")
-            newMatrix.append(newRow)
-        newDimensions[z] = newMatrix              
-    return newDimensions
+    for x in range(-cycle, maxX+1):
+        for y in range(-cycle, maxY+1):
+            for z in range(-maxZ, maxZ+1):
+                possibleNeighbors = [[x-1, x, x+1], [y-1, y, y+1], [z-1, z, z+1]]
+                neighbors = list(it.product(*possibleNeighbors))
+                neighbors = [[0, zn, yn, xn] for xn, yn, zn in neighbors if abs(zn) <= maxZ and yn <= maxY and yn >= -cycle and xn <= maxX and xn >= -cycle]
+                neighbors.remove([0,z,y,x])
+                countActiveNeighbors = 0 
+                for wn, zn, yn,xn in neighbors:
+                    indexOfNeighbor = ",".join(list(map(str, [wn, zn, yn,xn])))
+                    if indexOfNeighbor in activeDict.keys():
+                            countActiveNeighbors = countActiveNeighbors +1
                 
-def countActive(dimenions):
-    counter = 0
-    for z in dimensions.keys():
-        for y in range(0,maxY):
-            for x in range(0,maxX):
-                if dimensions[z][y][x] == "#":
-                    counter = counter + 1
-    return counter
-
-def printDimension():
-    print("\n\niteratie: ",iteration)
-    for key,value in dimensions.items():
-        print("---------------------------------------")
-        print("dimensie: ",key)
-        for row in value:
-            print(row)
+                index = ",".join(list(map(str, [0, z, y, x])))
+                if index in activeDict.keys():
+                    if countActiveNeighbors not in [2,3]:
+                        newActiveDict[index] = False
+                else: 
+                    if countActiveNeighbors == 3:
+                        newActiveDict[index] = True
     
-iteration = 1
+    deleteInactiveTiles = [key for key, value in newActiveDict.items() if value == False]
+    for key in deleteInactiveTiles:
+        del newActiveDict[key]
+        
+    return newActiveDict
 
-while iteration <= 6:
-    dimensions = extendMatrix(dimensions)
-    maxX = len(dimensions[0][0])
-    maxY = len(dimensions[0])
-    addNewDimension(iteration)
-    dimensions = calculateNewState(dimensions)
-    iteration = iteration + 1
+def runCycle4D(cycle, activeDict):
+    newActiveDict = copy.deepcopy(activeDict)
+    maxX = startX + cycle
+    maxY = startY + cycle
+    maxZ = cycle
+    maxW = cycle
     
-print(countActive(dimensions))
+    for x in range(-cycle, maxX+1):
+        for y in range(-cycle, maxY+1):
+            for z in range(-maxZ, maxZ+1):
+                for w in range(-maxW, maxW+1):
+                    possibleNeighbors = [[x-1, x, x+1], [y-1, y, y+1], [z-1, z, z+1], [w-1, w, w+1]]
+                    neighbors = list(it.product(*possibleNeighbors))
+                    neighbors = [[wn, zn, yn, xn] for xn, yn, zn, wn in neighbors if abs(wn) <= maxW and abs(zn) <= maxZ and yn <= maxY and yn >= -cycle and xn <= maxX and xn >= -cycle]
+                    neighbors.remove([w,z,y,x])
+                    countActiveNeighbors = 0 
+                    for wn, zn, yn,xn in neighbors:
+                        indexOfNeighbor = ",".join(list(map(str, [wn, zn, yn,xn])))
+                        if indexOfNeighbor in activeDict.keys():
+                                countActiveNeighbors = countActiveNeighbors +1
+                    
+                    index = ",".join(list(map(str, [w, z, y, x])))
+                    if index in activeDict.keys():
+                        if countActiveNeighbors not in [2,3]:
+                            newActiveDict[index] = False
+                    else: 
+                        if countActiveNeighbors == 3:
+                            newActiveDict[index] = True
+    
+    deleteInactiveTiles = [key for key, value in newActiveDict.items() if value == False]
+    for key in deleteInactiveTiles:
+        del newActiveDict[key]
+        
+    return newActiveDict
+
+startX = len(Input[0])
+startY = len(Input)
+startZ = 0
+startW = 0 
+
+activeDict3D = copy.deepcopy(activeDict)
+activeDict4D = copy.deepcopy(activeDict)
+
+for cycle in range(1,7):
+    activeDict3D = runCycle3D(cycle, activeDict3D)
+    activeDict4D = runCycle4D(cycle, activeDict4D)
+    
+print(len(list(activeDict3D.keys())))
+print(len(list(activeDict4D.keys())))
+    
